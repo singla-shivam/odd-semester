@@ -48,6 +48,7 @@ class Task{
       if(ok) validFrames.add(f);
       System.out.println(validFactors.get(i));
     }
+    if(validFrames.size() == 0) return -1;
     return 0;
   }
 }
@@ -125,9 +126,9 @@ public class CyclicSchedule{
   private static int majorCycle;
   private static int minorCycle;
   public static void main(String []args){
-    Task t1 = new Task(0, 2, 5, 7);
-    Task t2 = new Task(0, 5, 6, 10);
-    Task t3 = new Task(1, 1, 4, 6);
+    Task t1 = new Task(0, 1, 4, 4);
+    Task t2 = new Task(0, 2, 5, 7);
+    Task t3 = new Task(0, 3, 20, 20);
     tasks.add(t1);
     tasks.add(t2);
     tasks.add(t3);
