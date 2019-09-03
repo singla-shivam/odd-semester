@@ -160,12 +160,37 @@ public class CyclicSchedule{
   private static int minorCycle;
   public static void main(String []args){
     Task.currentTime = 0;
-    Task t1 = new Task(0, 1, 4, 4);
-    Task t2 = new Task(0, 2, 5, 7);
-    Task t3 = new Task(0, 3, 20, 20);
-    tasks.add(t1);
-    tasks.add(t2);
-    tasks.add(t3);
+    if(args.length != 0){
+      if(args[0].equals("aperiodic")){
+        addTasks(1);
+        scheduleAPeriodic();
+      }
+      else{
+        addTasks(0);
+        schedulePeriodicOnly();
+      }
+    }
+    else{
+      addTasks(0);
+      schedulePeriodicOnly();
+    }
+  }
+
+  private static void addTasks(int type){
+    // only periodic tasks
+    if(type == 0){
+      Task t1 = new Task(0, 1, 4, 4);
+      Task t2 = new Task(0, 2, 5, 7);
+      Task t3 = new Task(0, 3, 20, 20);
+      tasks.add(t1);
+      tasks.add(t2);
+      tasks.add(t3);
+    }
+    // aperiodic tasks
+    else if(type == 1){}
+  }
+
+  private static void schedulePeriodicOnly(){
     //get major and minor cycles
     majorCycle = Task.majorCycle(tasks);
     minorCycle = Task.minorCycle(majorCycle, tasks);
@@ -203,6 +228,7 @@ public class CyclicSchedule{
         }
       }
     }
-    
   }
+
+  private static void scheduleAPeriodic(){}
 }
