@@ -1,142 +1,80 @@
-import java.util.ArrayList;
-
+import java.util.*;
 class Task{
-  private int aT;  
-  private int eT;  
-  private int period;  
-  private int relativeDeadline;
-
-  Task(int aT, int eT, int period, int relativeDeadline){
-    this.aT = aT;
-    this.eT = eT;
+  static int PID = 0;
+  public int pid;
+  public int jobNo;
+  private double arrivalTime;
+  private double executionTime;
+  private double period;
+  private double relativeDeadline;
+  private boolean scheduled;
+  private double remainingTime;
+  Task(double at, double period, double et, double rD){
+    this.arrivalTime = at;
+    this.executionTime = et;
     this.period = period;
-    this.relativeDeadline = relativeDeadline;
+    this.relativeDeadline = rD;
+    this.pid = ++Task.PID;
+    this.scheduled = false;
+    this.jobNo = 0;
   }
 
-  static int majorCycle(ArrayList<Task> tasks){
-    int[] arr = new int[tasks.size()];
+  public boolean execute(){
+    this.remainingTime -= 0.5;
+    if(this.remainingTime == 0 ) this.scheduled = false;
+    return this.scheduled;
+  }
+
+  public double getRelativeDeadline(){
+    return this.relativeDeadline;
+  }
+  static void checkArivalTime(ArrayList<Task> tasks, double currentTime, ArrayList<Task> queue){
     for(int i = 0; i < tasks.size(); i++){
-      arr[i] = tasks.get(i).period;
-    }
-    return Utils.lcm(arr);
-  }
-
-  static int minorCycle(int majorCycle, ArrayList<Task> tasks){
-    int lowerLimit = 0, upperLimit;
-    ArrayList<Integer> factors = new ArrayList();
-    ArrayList<Integer> validFactors = new ArrayList();
-    ArrayList<Integer> validFrames = new ArrayList();
-    int[] excutionTimes = new int[tasks.size()];
-    int[] deadlines = new int[tasks.size()];
-    for(int i = 0; i < tasks.size(); i++){
-      excutionTimes[i] = tasks.get(i).eT;
-      deadlines[i] = tasks.get(i).relativeDeadline;
-    }
-    lowerLimit = Utils.max(excutionTimes);
-    upperLimit = Utils.min(deadlines);
-    factors = Utils.factors(majorCycle);
-    System.out.println(lowerLimit + " " + upperLimit);
-    for(int i=0; i < factors.size(); i++) if (factors.get(i) >= lowerLimit && factors.get(i) <= upperLimit) validFactors.add(factors.get(i));
-    for(int i=0; i < validFactors.size(); i++){
-      boolean ok = true;
-      int f = validFactors.get(i);
-      for(int j = 0; j < tasks.size(); j++){
-        Task t = tasks.get(j);
-        if(ok && (2*f - Utils.gcd(f, t.period)) > t.relativeDeadline) ok = false;
+      Task t = tasks.get(i);
+      if(currentTime >= t.arrivalTime && (currentTime - t.arrivalTime) % t.period == 0 && !t.scheduled){
+        System.out.println(currentTime + " : " +  t.pid);
+        t.scheduled = true;
+        t.remainingTime = t.executionTime;
+        t.jobNo ++; 
+        queue.add(t);
       }
-      System.out.println(f + " " + ok);
-      if(ok) validFrames.add(f);
-      System.out.println(validFactors.get(i));
     }
-    if(validFrames.size() == 0) return -1;
-    return 0;
   }
 }
 
-class Utils{
-  static ArrayList factors(int number){
-    ArrayList s = new ArrayList();
-    for(int i = 1; i < number/2; i++){
-      if(number%i == 0){
-        s.add(i);
-      }
-    }
-    return s;
-  }
-  
-  static int max(int []numbers){
-    int max = -999;
-    for(int i =0; i < numbers.length; i++){
-      max = max < numbers[i] ? numbers[i] : max;
-    }
-    return max;
-  }
-
-  static int min(int []numbers){
-    int min = 1000000;
-    for(int i =0; i < numbers.length; i++){
-      min = min > numbers[i] ? numbers[i] : min;
-    }
-    return min;
-  }
-
-  static int gcd(int a, int b){
-    if(b == 0) return a;
-    else return gcd(b, a % b);
-  }
-
-  static int lcm(int []element_array){
-    int lcm_of_array_elements = 1;
-    int divisor = 2;         
-    while (true) { 
-      int counter = 0; 
-      boolean divisible = false;        
-      for (int i = 0; i < element_array.length; i++) {
-        if (element_array[i] == 0) { 
-          return 0; 
-        } 
-        else if (element_array[i] < 0) { 
-          element_array[i] = element_array[i] * (-1); 
-        } 
-        if (element_array[i] == 1) { 
-          counter++; 
-        }
-        if (element_array[i] % divisor == 0) { 
-          divisible = true; 
-          element_array[i] = element_array[i] / divisor; 
-        } 
-      }
-
-      if (divisible) { 
-          lcm_of_array_elements = lcm_of_array_elements * divisor; 
-      } 
-      else { 
-          divisor++; 
-      }
-      
-      if (counter == element_array.length) { 
-          return lcm_of_array_elements; 
-      } 
-    } 
-  }
-}
-
-public class CyclicSchedule{
-  private static ArrayList<Task> tasks = new ArrayList<Task>();
-  private static int majorCycle;
-  private static int minorCycle;
-  public static void main(String []args){
-    Task t1 = new Task(0, 1, 4, 4);
-    Task t2 = new Task(0, 2, 5, 7);
-    Task t3 = new Task(0, 3, 20, 20);
-    tasks.add(t1);
-    tasks.add(t2);
-    tasks.add(t3);
-    majorCycle = Task.majorCycle(tasks);
-    minorCycle = Task.minorCycle(majorCycle, tasks);
-    if(minorCycle == -1){
-      System.out.println("Can't be scheduled");
-      return;
+class TaskCompare implements Comparator<Task>{
+  @Override
+  public int compare(Task t1, Task t2) {
+    if(t1.getRelativeDeadline() > t2.getRelativeDeadline()){
+      return 1;
+    } else {
+      return -1;
     }
   }
 }
+
+public class AbsoluteDeadline{
+  private static double currentTime = -0.5;
+  public static void main(String[] args){
+    ArrayList<Task> tasks = new ArrayList<Task>();
+    ArrayList<Task> queue = new ArrayList<Task>();
+    tasks.add(new Task(50, 50, 75, 100));
+    tasks.add(new Task(0, 62.5, 10, 20));
+    tasks.add(new Task(0, 125, 25, 50));
+    while (currentTime <= 100 - 0.5) {
+      currentTime+= .5;
+      Task.checkArivalTime(tasks, currentTime, queue);
+      if(queue.isEmpty()) continue;
+      Collections.sort(queue, new TaskCompare());
+      System.out.println("Executing " + queue.get(0).pid + " job " + queue.get(0).jobNo + " at time " + currentTime);
+      boolean pending = queue.get(0).execute();
+      if(!pending) queue.remove(0);
+    }
+  }
+
+  public static void printQueue(ArrayList<Task> queue, double currentTime){
+    for(int i = 0; i < queue.size(); i++){
+      System.out.println("Queue : " + queue.get(i).pid + " : currentTime : " + currentTime);
+    }
+  }
+} 
