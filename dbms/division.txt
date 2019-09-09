@@ -1,0 +1,14 @@
+drop table IF EXISTS tableDivA;
+drop table IF EXISTS tableDivB;
+create table tableDivA(x int, y varchar(10),z int, a int);
+create table tableDivB(x int, y varchar(10));
+
+insert into tableDivA(x, y, z, a) values (1, "a", 1, 1), (2, "a", 1, 1), (3, "a", 1, 1);
+insert into tableDivB(x, y) values (1, "a"), (1, "a"), (2, "a");
+#select z, a
+#  from
+#    ((select * 
+#      from tableDivB as S
+#      cross join
+#        (select z, a from tableDivA) as t1)
+#  where x not in tableDivA;
