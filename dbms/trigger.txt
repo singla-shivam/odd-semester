@@ -1,0 +1,18 @@
+drop table IF EXISTS tableTriggerA;
+drop table IF EXISTS tableTriggerB;
+create table tableTriggerA(x int, y varchar(10),z int, a int);
+create table tableTriggerB(x int, y varchar(10));
+
+DELIMITER $$
+  create trigger trigger1
+    after insert 
+    on tableTriggerA
+    for each row
+    BEGIN
+      if NEW.x > 2 then
+        insert into 
+          tableTriggerB(x, y)
+          values(NEW.x, NEW.y);
+      end if;
+    END$$
+DELIMITER;
