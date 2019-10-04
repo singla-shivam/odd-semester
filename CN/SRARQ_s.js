@@ -8,26 +8,24 @@ let store = {}
 io.on('connection', function (socket) {
     console.log('connected:', socket.client.id);
     socket.on('serverEvent', function (data) {
-        console.log('new message from client:', data);
+        // TODO: 
     });
-    setInterval(function () {
-        socket.emit('clientEvent', Math.random());
-        console.log('message sent to the clients');
-    }, 3000);
+
+    process.stdin.resume()
+    process.stdin.on('data', (d) => {
+        if(seqN - seqFirst < windowSize) {
+            frameToSend = makeFrame(getDataFromNetworkLayer())
+            frameToSend += seqN.toString(2)
+            storeFrame(seqN, frameToSend)
+            // send frame
+            socket.emit('clientEvent', frameToSend)
+            // TODO: start timer
+
+            seqN ++
+        }
+    })
 });
 
-process.stdin.resume()
-process.stdin.on('data', (d) => {
-    if(seqN - seqFirst < windowSize) {
-        frameToSend = makeFrame(getDataFromNetworkLayer())
-        frameToSend += seqN.toString(2)
-        storeFrame(seqN, frameToSend)
-        console.log(store)
-        // send frame
-        // start timer
-        seqN ++
-    }
-})
 
 function getDataFromNetworkLayer() {
     return Math.floor(Math.random() * (10 ** 10))
